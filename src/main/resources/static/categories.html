@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flame — Kategori Game</title>
+    <style>
+        :root{--bg:#1a1a1a;--card:#2a2a2a;--muted:#8892a0;--accent:#f53838;--accent-light:#ff6b6b}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;min-height:100vh;background:var(--bg);color:#e0e6ed}
+        .wrapper{display:flex;min-height:100vh}
+
+        /* SIDEBAR */
+        .sidebar{width:200px;background:#1a1a1a;border-right:1px solid rgba(255,255,255,0.06);padding:20px 0;overflow-y:auto;position:sticky;top:0;max-height:100vh;flex-shrink:0}
+        .sidebar-logo{padding:0 16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px}
+        .sidebar-logo-mark{font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-1px}
+        .sidebar-logo-mark span{color:var(--accent)}
+        .sidebar-section{padding:0 12px;margin-bottom:20px}
+        .sidebar-section h3{margin:0 0 6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;padding:0 8px}
+        .sidebar-links{list-style:none;margin:0;padding:0}
+        .sidebar-links a{display:block;padding:8px;margin-bottom:2px;color:#ccc;text-decoration:none;border-radius:6px;font-size:0.88rem;transition:all .15s ease;font-weight:500}
+        .sidebar-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
+        .sidebar-links a.active{color:#fff;background:rgba(255,255,255,0.08)}
+
+        /* MAIN */
+        .main{flex:1;display:flex;flex-direction:column;min-width:0}
+        .header{background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+        .header-left{display:flex;align-items:center;gap:14px;flex:1}
+        .search-bar{flex:1;max-width:480px;display:flex;align-items:center;background:#2a2a2a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 14px;gap:8px}
+        .search-bar input{flex:1;background:0;border:0;color:inherit;font-size:0.9rem;outline:0}
+        .search-bar input::placeholder{color:var(--muted)}
+        .header-right{display:flex;gap:10px;align-items:center}
+        .btn{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all .2s ease}
+        .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted)}
+        .btn.ghost:hover{background:rgba(255,255,255,0.06);color:#fff}
+        .btn.primary{background:var(--accent);color:#fff}
+        .btn.primary:hover{background:#d42f2f}
+        .content{flex:1;padding:0;overflow-y:auto}
+        .content-body{padding:28px 32px}
+
+        .page-title{font-size:2rem;margin:0 0 8px;font-weight:900;color:#fff;letter-spacing:-0.5px}
+        .page-subtitle{color:var(--muted);margin:0 0 24px;font-size:0.95rem}
+
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+
+        /* CATEGORY CARD */
+        .category-card{background:#252525;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;min-height:130px;cursor:pointer;transition:all .25s ease}
+        .category-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.12);background:#2c2c2c}
+        .category-card h3{margin:0 0 6px;font-size:1rem;font-weight:700;color:#fff}
+        .category-card p{margin:0;color:var(--muted);font-size:0.84rem;line-height:1.5}
+        .category-card .count{margin-top:12px;color:var(--accent-light);font-weight:700;font-size:0.92rem}
+
+        /* GAME GRID (landscape, mirip RAWG) */
+        .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+        .game-card{background:#252525;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);transition:all .25s ease;cursor:pointer}
+        .game-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.12);background:#2c2c2c}
+        .game-poster{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#111}
+        .game-poster img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease}
+        .game-card:hover .game-poster img{transform:scale(1.04)}
+        .game-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);color:#fff;padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+        .game-rating{position:absolute;bottom:8px;right:8px;background:var(--accent);color:#fff;padding:3px 8px;border-radius:4px;font-weight:700;font-size:0.82rem}
+        .game-info{padding:12px 14px}
+        .game-title{margin:0 0 5px;font-size:0.92rem;font-weight:700;line-height:1.35;color:#fff}
+        .game-meta{color:var(--muted);font-size:0.78rem;margin:0;display:flex;gap:8px;align-items:center}
+        .game-meta-dot{width:3px;height:3px;background:var(--muted);border-radius:50%;flex-shrink:0}
+
+        /* FILTER BAR */
+        .filter-bar{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;margin:32px 0 24px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+        .filter-item{display:flex;flex-direction:column;gap:6px}
+        .filter-item label{font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+        .filter-item input,.filter-item select{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:inherit;border-radius:6px;padding:8px 10px;font-size:0.88rem}
+        .filter-item input::placeholder{color:var(--muted)}
+
+        .section-heading{font-size:1.4rem;margin:0 0 16px;font-weight:800;color:#fff}
+
+        footer{padding:24px 32px;border-top:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:0.82rem;text-align:center}
+
+        @media(max-width:900px){.sidebar{width:160px}.grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+        @media(max-width:680px){.wrapper{flex-direction:column}.sidebar{width:100%;max-height:none;border-right:0;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.game-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.filter-bar{grid-template-columns:1fr 1fr}.content-body{padding:20px}}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-mark">FL<span>A</span>ME</div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Jelajahi</h3>
+            <div class="sidebar-links">
+                <a href="/">Beranda</a>
+                <a href="/categories" class="active">Kategori</a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Genre</h3>
+            <div class="sidebar-links">
+                <a href="#" onclick="selectGenre('Action');return false">Action</a>
+                <a href="#" onclick="selectGenre('Adventure');return false">Adventure</a>
+                <a href="#" onclick="selectGenre('RPG');return false">RPG</a>
+                <a href="#" onclick="selectGenre('Sports');return false">Sports</a>
+                <a href="#" onclick="selectGenre('Strategy');return false">Strategy</a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Akun</h3>
+            <div class="sidebar-links" id="accountLinks">
+                <a href="/login.html" id="loginLink">Login</a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Lainnya</h3>
+            <div class="sidebar-links">
+                <a href="/about.html">Tentang</a>
+                <a href="/contact.html">Kontak</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <div class="search-bar">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></svg>
+                    <input id="searchTitle" type="text" placeholder="Cari game, genre..." />
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn ghost" id="refreshBtn">Muat Ulang</button>
+                <button class="btn primary" id="loginBtn">Login</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="content-body">
+                <section style="margin-bottom:8px">
+                    <h1 class="page-title">Pilih Kategori</h1>
+                    <p class="page-subtitle">Telusuri genre game yang tersedia dalam koleksi Flame</p>
+                    <div class="grid" id="categoryGrid"></div>
+                </section>
+
+                <div class="filter-bar">
+                    <div class="filter-item">
+                        <label>Cari Judul</label>
+                        <input id="searchInput" type="text" placeholder="Nama game..." />
+                    </div>
+                    <div class="filter-item">
+                        <label>Platform</label>
+                        <select id="platformSelect">
+                            <option value="">Semua Platform</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Rating Minimal</label>
+                        <select id="ratingSelect">
+                            <option value="0">Semua</option>
+                            <option value="4">4.0+</option>
+                            <option value="3">3.0+</option>
+                            <option value="2">2.0+</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>&nbsp;</label>
+                        <button class="btn primary" id="sortRatingBtn" style="width:100%">Rating ↓</button>
+                    </div>
+                </div>
+
+                <section>
+                    <h2 class="section-heading" id="selectedGenreText">Semua Game</h2>
+                    <div class="game-grid" id="gameGrid"></div>
+                </section>
+            </div>
+
+            <footer>© 2026 Flame. Temukan game yang sempurna untuk setiap mood dan platform.</footer>
+        </div>
+    </main>
+</div>
+
+<script>
+    const categoryGrid = document.getElementById('categoryGrid');
+    const gameGrid = document.getElementById('gameGrid');
+    const selectedGenreText = document.getElementById('selectedGenreText');
+    const searchInput = document.getElementById('searchInput');
+    const searchTitle = document.getElementById('searchTitle');
+    const platformSelect = document.getElementById('platformSelect');
+    const ratingSelect = document.getElementById('ratingSelect');
+    const sortRatingBtn = document.getElementById('sortRatingBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginLink = document.getElementById('loginLink');
+    const AUTH_KEY = 'flameAuthUser';
+    let allGamesCache = [];
+    let selectedGenre = '';
+    let sortRatingAsc = false;
+
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]))}
+    function isAuth(){return !!localStorage.getItem(AUTH_KEY)}
+    function logout(event){event.preventDefault();if(confirm('Yakin mau logout?')){localStorage.removeItem(AUTH_KEY);location.reload()}}
+
+    function updateAuthUI(){
+        const accountLinks = document.getElementById('accountLinks');
+        if(isAuth()){
+            const user = JSON.parse(localStorage.getItem(AUTH_KEY));
+            loginBtn.textContent = '👤 ' + user.username;
+            loginBtn.onclick = () => window.location.href = '/profile.html';
+            accountLinks.innerHTML = `
+                <a href="/profile.html">👤 ${escapeHtml(user.username)}</a>
+                <a href="#" onclick="logout(event)">Logout</a>`;
+        } else {
+            loginBtn.textContent = 'Login';
+            loginBtn.onclick = () => window.location.href = '/login.html';
+            accountLinks.innerHTML = `<a href="/login.html">Login</a>`;
+        }
+    }
+
+    function renderCategoryCard(genre, count){
+        return `<article class="category-card" onclick="selectGenre('${escapeHtml(genre)}')">
+            <div>
+                <h3>${escapeHtml(genre)}</h3>
+                <p>Temukan game dengan genre ${escapeHtml(genre)}</p>
+            </div>
+            <div class="count">${count} judul</div>
+        </article>`;
+    }
+
+    function renderGameCard(g){
+        const seed=encodeURIComponent(g.id||g.judul||Math.random());
+        const img=g.backgroundImage || `https://picsum.photos/seed/${seed}/600/340`;
+        const rating=(g.rating||0).toFixed(1);
+        const platform = escapeHtml(g.platform||'N/A');
+        const genre = escapeHtml(g.genre||'Unknown');
+        return `<article class="game-card" onclick="window.location.href='/game-detail.html?gameId=${g.id}'">
+            <div class="game-poster">
+                <img src="${escapeHtml(img)}" alt="${escapeHtml(g.judul||'Game')}" loading="lazy" />
+                <div class="game-badge">${genre}</div>
+                <div class="game-rating">★ ${rating}</div>
+            </div>
+            <div class="game-info">
+                <h3 class="game-title">${escapeHtml(g.judul||'Untitled')}</h3>
+                <p class="game-meta">${platform}<span class="game-meta-dot"></span>${genre}</p>
+            </div>
+        </article>`;
+    }
+
+    async function fetchGames(url){
+        try{const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}catch(e){console.error(e);return[]}
+    }
+
+    function updatePlatformOptions(games){
+        const platforms=Array.from(new Set(games.map(g=>(g.platform||'Unknown').trim()).filter(Boolean)));
+        const existingValue=platformSelect.value;
+        platformSelect.innerHTML='<option value="">Semua Platform</option>'+platforms.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+        platformSelect.value=platforms.includes(existingValue)?existingValue:''
+    }
+
+    function applyFilters(genre=''){
+        if(genre!==undefined)selectedGenre=genre;
+        const query=(searchInput.value+searchTitle.value).trim().toLowerCase();
+        const platform=platformSelect.value;
+        const minRating=parseFloat(ratingSelect.value)||0;
+        const filtered=allGamesCache.filter(game=>{
+            const matchGenre=!selectedGenre||(game.genre||'').toLowerCase()===selectedGenre.toLowerCase();
+            const matchPlatform=!platform||(game.platform||'').toLowerCase()===platform.toLowerCase();
+            const matchRating=(game.rating||0)>=minRating;
+            const matchQuery=!query||((game.judul||'').toLowerCase().includes(query)||(game.deskripsi||'').toLowerCase().includes(query));
+            return matchGenre&&matchPlatform&&matchRating&&matchQuery
+        });
+        const sorted=filtered.sort((a,b)=>sortRatingAsc?a.rating-b.rating:b.rating-a.rating);
+        selectedGenreText.textContent=selectedGenre?`Game dalam kategori: ${selectedGenre}`:'Semua Game';
+        gameGrid.innerHTML=sorted.length?sorted.map(renderGameCard).join(''):'<div style="grid-column:1/-1;color:var(--muted);padding:40px;text-align:center">Tidak ada game ditemukan</div>'
+    }
+
+    async function loadCategories(){
+        categoryGrid.innerHTML='<div style="grid-column:1/-1;color:var(--muted);padding:40px;text-align:center">Memuat kategori...</div>';
+        gameGrid.innerHTML='<div style="grid-column:1/-1;color:var(--muted);padding:40px;text-align:center">Memuat game...</div>';
+        try{
+            const games=await fetchGames('/api/games');
+            allGamesCache=games;
+            if(!games.length){categoryGrid.innerHTML='<div style="grid-column:1/-1;color:var(--muted)">Tidak ada game tersedia</div>';return}
+            updatePlatformOptions(games);
+            const genres=games.reduce((acc,game)=>{const genre=(game.genre||'Tanpa Kategori').trim();if(!genre)return acc;acc[genre]=(acc[genre]||0)+1;return acc},{});
+            const genreEntries=Object.entries(genres).sort((a,b)=>b[1]-a[1]);
+            categoryGrid.innerHTML=genreEntries.map(([genre,count])=>renderCategoryCard(genre,count)).join('');
+            applyFilters('')
+        }catch(e){console.error(e);categoryGrid.innerHTML='<div style="grid-column:1/-1;color:var(--muted)">Gagal memuat kategori</div>'}
+    }
+
+    function selectGenre(genre=''){selectedGenre=genre;applyFilters(genre)}
+
+    searchInput.addEventListener('input',()=>applyFilters(selectedGenre));
+    searchTitle.addEventListener('input',()=>applyFilters(selectedGenre));
+    platformSelect.addEventListener('change',()=>applyFilters(selectedGenre));
+    ratingSelect.addEventListener('change',()=>applyFilters(selectedGenre));
+    sortRatingBtn.addEventListener('click',()=>{sortRatingAsc=!sortRatingAsc;sortRatingBtn.textContent=`Rating ${sortRatingAsc?'↑':'↓'}`;applyFilters(selectedGenre)});
+    refreshBtn.addEventListener('click',loadCategories);
+
+    loadCategories();
+    updateAuthUI();
+</script>
+</body>
+</html>

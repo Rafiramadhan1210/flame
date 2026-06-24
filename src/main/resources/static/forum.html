@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flame — Forum</title>
+    <style>
+        :root{--bg:#020617;--card:#1a1f37;--muted:#8892a0;--accent:#f53838}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Segoe UI',sans-serif;min-height:100vh;background:var(--bg);color:#e0e6ed}
+        .header{background:#0c0f1b;border-bottom:1px solid rgba(255,255,255,0.05);padding:16px 32px;display:flex;align-items:center;gap:16px}
+        .logo-mini{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ff8a80);display:grid;place-items:center;color:#fff;font-weight:700}
+        .back-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.9rem}
+        .back-btn:hover{color:#fff;background:rgba(255,255,255,0.1)}
+        .content{max-width:800px;margin:0 auto;padding:32px 16px}
+        .game-title-bar{margin-bottom:32px}
+        .game-title-bar h1{font-size:1.75rem;font-weight:700}
+        .game-title-bar p{color:var(--muted);margin-top:4px}
+        .btn{padding:10px 16px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.9rem}
+        .btn.primary{background:var(--accent);color:#fff}
+        .btn.primary:hover{background:#ff5252}
+        .new-thread-form{background:var(--card);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:24px;margin-bottom:32px;display:none}
+        .new-thread-form h3{margin-bottom:16px;font-size:1rem}
+        .form-group{margin-bottom:14px}
+        .form-group label{display:block;font-size:0.8rem;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:6px}
+        .form-group input,.form-group textarea{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:inherit;border-radius:8px;padding:10px 12px;font-size:0.95rem;outline:none;resize:vertical}
+        .form-group input:focus,.form-group textarea:focus{border-color:var(--accent)}
+        .form-group textarea{min-height:100px}
+        .thread-list{display:flex;flex-direction:column;gap:12px}
+        .thread-card{background:var(--card);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s}
+        .thread-card:hover{border-color:rgba(245,56,56,0.3);transform:translateY(-2px)}
+        .thread-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+        .thread-title{font-size:1rem;font-weight:600;margin-bottom:6px}
+        .thread-meta{color:var(--muted);font-size:0.8rem}
+        .thread-preview{color:var(--muted);font-size:0.9rem;margin-top:8px;line-height:1.5}
+        .reply-count{background:rgba(245,56,56,0.15);color:#ff6b6b;padding:4px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;white-space:nowrap}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;place-items:center;z-index:100;padding:16px}
+        .modal-overlay.open{display:grid}
+        .modal{background:#0f1629;border:1px solid rgba(255,255,255,0.08);border-radius:16px;width:100%;max-width:640px;max-height:85vh;display:flex;flex-direction:column}
+        .modal-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center}
+        .modal-header h3{font-size:1rem;font-weight:600}
+        .close-btn{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1}
+        .modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+        .reply-item{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.05)}
+        .reply-item:last-child{border-bottom:none}
+        .reply-author{font-weight:600;font-size:0.9rem;color:#ff6b6b}
+        .reply-time{color:var(--muted);font-size:0.8rem;margin-left:8px}
+        .reply-content{margin-top:6px;line-height:1.6;font-size:0.95rem}
+        .reply-form{padding:16px 24px;border-top:1px solid rgba(255,255,255,0.05)}
+        .reply-form textarea{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:inherit;border-radius:8px;padding:10px 12px;font-size:0.9rem;resize:none;outline:none;min-height:80px}
+        .reply-form textarea:focus{border-color:var(--accent)}
+        .empty{color:var(--muted);text-align:center;padding:40px}
+        .loading{color:var(--muted);text-align:center;padding:40px}
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="history.back()">← Kembali</button>
+    <div class="logo-mini">F</div>
+    <span style="font-weight:600">Forum Game</span>
+    <span style="margin-left:auto;color:var(--muted);font-size:0.9rem" id="userInfo"></span>
+</header>
+
+<div class="content">
+    <div class="game-title-bar">
+        <h1 id="gameNameTitle">Forum</h1>
+        <p id="gameSubtitle">Diskusi seputar game ini</p>
+    </div>
+
+    <div style="margin-bottom:20px">
+        <button class="btn primary" onclick="toggleNewThread()">+ Buat Thread Baru</button>
+    </div>
+
+    <!-- Form Thread Baru -->
+    <div class="new-thread-form" id="newThreadForm">
+        <h3>Buat Thread Baru</h3>
+        <div class="form-group">
+            <label>Judul Thread</label>
+            <input id="threadJudul" type="text" placeholder="Tulis judul diskusi..." />
+        </div>
+        <div class="form-group">
+            <label>Isi</label>
+            <textarea id="threadKonten" placeholder="Tulis isi diskusi kamu..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button class="btn primary" onclick="submitThread()">Kirim Thread</button>
+            <button class="btn" style="background:rgba(255,255,255,0.05);color:var(--muted)" onclick="toggleNewThread()">Batal</button>
+        </div>
+    </div>
+
+    <!-- Daftar Thread -->
+    <div class="thread-list" id="threadList">
+        <div class="loading">Memuat thread...</div>
+    </div>
+</div>
+
+<!-- Modal Reply -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalThreadTitle">Thread</h3>
+            <button class="close-btn" onclick="closeModalDirect()">×</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <div class="loading">Memuat replies...</div>
+        </div>
+        <div class="reply-form">
+            <textarea id="replyInput" placeholder="Tulis balasan kamu..."></textarea>
+            <div style="margin-top:10px;display:flex;justify-content:flex-end">
+                <button class="btn primary" onclick="submitReply()">Kirim Balasan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const AUTH_KEY = 'flameAuthUser';
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('gameId');
+    const gameName = decodeURIComponent(params.get('game') || 'Game');
+    const authRaw = localStorage.getItem(AUTH_KEY);
+    const auth = authRaw ? JSON.parse(authRaw) : null;
+    let activeThreadId = null;
+
+    // Cek login
+    if (!auth) {
+        alert('Kamu harus login dulu!');
+        window.location.href = '/login.html';
+    }
+
+    // Set info
+    document.getElementById('gameNameTitle').textContent = gameName;
+    document.getElementById('gameSubtitle').textContent = `Forum diskusi: ${gameName}`;
+    document.getElementById('userInfo').textContent = `Login sebagai: ${auth?.username}`;
+
+    function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, c =>
+            ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[c]));
+    }
+
+    function formatTime(dt) {
+        if (!dt) return '';
+        return new Date(dt).toLocaleString('id-ID', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function toggleNewThread() {
+        const form = document.getElementById('newThreadForm');
+        form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    }
+
+    async function loadThreads() {
+        const list = document.getElementById('threadList');
+        list.innerHTML = '<div class="loading">Memuat thread...</div>';
+        try {
+            const res = await fetch(`/api/forum/game/${gameId}`);
+            const threads = await res.json();
+            if (!threads.length) {
+                list.innerHTML = '<div class="empty">Belum ada thread. Jadilah yang pertama berdiskusi!</div>';
+                return;
+            }
+            list.innerHTML = threads.map(t => {
+                const ownerControls = t.username === auth?.username ? `
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                        <button class="btn" style="padding:6px 10px;font-size:0.8rem" onclick="editThread(event, ${t.id})">Edit</button>
+                        <button class="btn" style="padding:6px 10px;font-size:0.8rem;background:rgba(255,255,255,0.08);color:#ff6b6b" onclick="deleteThread(event, ${t.id})">Hapus</button>
+                    </div>
+                ` : '';
+                return `
+                <div class="thread-card" onclick="openThread(${t.id}, '${escapeHtml(t.judul)}')">
+                    <div class="thread-header">
+                        <div>
+                            <div class="thread-title">${escapeHtml(t.judul)}</div>
+                            <div class="thread-meta">oleh <strong>${escapeHtml(t.username)}</strong> · ${formatTime(t.createdAt)}</div>
+                        </div>
+                        <span class="reply-count">💬 Lihat</span>
+                    </div>
+                    <div class="thread-preview">${escapeHtml(t.konten?.slice(0, 120))}${t.konten?.length > 120 ? '...' : ''}</div>
+                    ${ownerControls}
+                </div>
+                `;
+            }).join('');
+        } catch (e) {
+            list.innerHTML = '<div class="empty">Gagal memuat thread.</div>';
+        }
+    }
+
+    async function submitThread() {
+        const judul = document.getElementById('threadJudul').value.trim();
+        const konten = document.getElementById('threadKonten').value.trim();
+        if (!judul || !konten) { alert('Judul dan isi wajib diisi!'); return; }
+
+        try {
+            const res = await fetch('/api/forum/thread', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ judul, konten, username: auth.username, gameId: parseInt(gameId) })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('threadJudul').value = '';
+                document.getElementById('threadKonten').value = '';
+                toggleNewThread();
+                loadThreads();
+            }
+        } catch (e) { alert('Gagal membuat thread'); }
+    }
+
+    async function openThread(threadId, threadTitle) {
+        activeThreadId = threadId;
+        document.getElementById('modalThreadTitle').textContent = threadTitle;
+        document.getElementById('modalBody').innerHTML = '<div class="loading">Memuat replies...</div>';
+        document.getElementById('modalOverlay').classList.add('open');
+        document.getElementById('replyInput').value = '';
+        await loadReplies(threadId);
+    }
+
+    async function loadReplies(threadId) {
+        try {
+            const res = await fetch(`/api/forum/thread/${threadId}/replies`);
+            const replies = await res.json();
+            const body = document.getElementById('modalBody');
+            if (!replies.length) {
+                body.innerHTML = '<div class="empty">Belum ada balasan. Jadilah yang pertama!</div>';
+                return;
+            }
+            body.innerHTML = replies.map(r => {
+                const ownerActions = r.username === auth?.username ? `
+                    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn" style="padding:6px 10px;font-size:0.8rem" onclick="editReply(event, ${r.id})">Edit</button>
+                        <button class="btn" style="padding:6px 10px;font-size:0.8rem;background:rgba(255,255,255,0.08);color:#ff6b6b" onclick="deleteReply(event, ${r.id})">Hapus</button>
+                    </div>
+                ` : '';
+                return `
+                <div class="reply-item">
+                    <div>
+                        <span class="reply-author">${escapeHtml(r.username)}</span>
+                        <span class="reply-time">${formatTime(r.createdAt)}</span>
+                    </div>
+                    <div class="reply-content">${escapeHtml(r.konten)}</div>
+                    ${ownerActions}
+                </div>
+            `;
+            }).join('');
+        } catch (e) {
+            document.getElementById('modalBody').innerHTML = '<div class="empty">Gagal memuat replies.</div>';
+        }
+    }
+
+    async function submitReply() {
+        const konten = document.getElementById('replyInput').value.trim();
+        if (!konten) { alert('Balasan tidak boleh kosong!'); return; }
+
+        try {
+            const res = await fetch('/api/forum/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ konten, username: auth.username, threadId: activeThreadId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('replyInput').value = '';
+                await loadReplies(activeThreadId);
+            }
+        } catch (e) { alert('Gagal mengirim balasan'); }
+    }
+
+    function closeModal(e) {
+        if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+    }
+
+    function closeModalDirect() {
+        document.getElementById('modalOverlay').classList.remove('open');
+        activeThreadId = null;
+    }
+
+    async function editThread(event, threadId) {
+        event.stopPropagation();
+        try {
+            const res = await fetch(`/api/forum/thread/${threadId}`);
+            if (!res.ok) return alert('Thread tidak ditemukan.');
+            const thread = await res.json();
+            if (thread.username !== auth?.username) return alert('Hanya pemilik thread yang dapat mengedit.');
+            const newTitle = prompt('Edit judul thread:', thread.judul);
+            if (newTitle === null) return;
+            const newKonten = prompt('Edit isi thread:', thread.konten);
+            if (newKonten === null) return;
+            const updateRes = await fetch(`/api/forum/thread/${threadId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: threadId, judul: newTitle.trim(), konten: newKonten.trim(), username: auth.username, gameId: thread.gameId })
+            });
+            const data = await updateRes.json();
+            if (data.success) {
+                loadThreads();
+                if (activeThreadId === threadId) {
+                    openThread(threadId, newTitle.trim());
+                }
+            } else {
+                alert(data.message || 'Gagal memperbarui thread.');
+            }
+        } catch (e) {
+            alert('Gagal memperbarui thread.');
+        }
+    }
+
+    async function deleteThread(event, threadId) {
+        event.stopPropagation();
+        if (!confirm('Hapus thread ini?')) return;
+        try {
+            const res = await fetch(`/api/forum/thread/${threadId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: auth.username })
+            });
+            const data = await res.json();
+            if (data.success) {
+                loadThreads();
+                closeModalDirect();
+            } else {
+                alert(data.message || 'Gagal menghapus thread.');
+            }
+        } catch (e) {
+            alert('Gagal menghapus thread.');
+        }
+    }
+
+    async function editReply(event, replyId) {
+        event.stopPropagation();
+        try {
+            const currentText = prompt('Edit balasan Anda:');
+            if (currentText === null) return;
+            const updateRes = await fetch(`/api/forum/reply/${replyId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: replyId, konten: currentText.trim(), username: auth.username, threadId: activeThreadId })
+            });
+            const data = await updateRes.json();
+            if (data.success) {
+                await loadReplies(activeThreadId);
+            } else {
+                alert(data.message || 'Gagal memperbarui balasan.');
+            }
+        } catch (e) {
+            alert('Gagal memperbarui balasan.');
+        }
+    }
+
+    async function deleteReply(event, replyId) {
+        event.stopPropagation();
+        if (!confirm('Hapus balasan ini?')) return;
+        try {
+            const res = await fetch(`/api/forum/reply/${replyId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: auth.username })
+            });
+            const data = await res.json();
+            if (data.success) {
+                await loadReplies(activeThreadId);
+            } else {
+                alert(data.message || 'Gagal menghapus balasan.');
+            }
+        } catch (e) {
+            alert('Gagal menghapus balasan.');
+        }
+    }
+
+    loadThreads();
+</script>
+</body>
+</html>

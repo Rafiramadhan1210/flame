@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flame — Detail Game</title>
+    <style>
+        :root{--bg:#1a1a1a;--card:#2a2a2a;--muted:#8892a0;--accent:#f53838}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:#e0e6ed;min-height:100vh}
+        .header{background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 32px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50}
+        .logo{font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:-1px;text-decoration:none}
+        .logo span{color:var(--accent)}
+        .back-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#e0e6ed;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.9rem;text-decoration:none}
+        .back-btn:hover{background:rgba(255,255,255,0.1)}
+        .hero{position:relative;height:420px;overflow:hidden;background:#000}
+        .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.3)}
+        .hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 25%,transparent)}
+        .hero-content{position:absolute;bottom:0;left:0;right:0;padding:32px 40px;display:flex;align-items:flex-end;gap:24px}
+        .hero-thumb{width:110px;height:150px;object-fit:cover;border-radius:10px;border:3px solid rgba(255,255,255,0.15);flex-shrink:0}
+        .hero-info h1{font-size:2rem;font-weight:800;margin-bottom:8px}
+        .hero-genre{display:inline-block;background:var(--accent);color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;margin-bottom:10px}
+        .hero-meta{color:var(--muted);font-size:0.9rem}
+        .rating-badge{margin-left:auto;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;font-weight:700;font-size:1.1rem;padding:8px 16px;border-radius:8px;white-space:nowrap}
+        .main{max-width:1100px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:1fr 300px;gap:40px}
+        @media(max-width:768px){.main{grid-template-columns:1fr}}
+        .section-label{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .section-label::before{content:'';width:4px;height:18px;background:var(--accent);border-radius:2px}
+        .carousel{position:relative;border-radius:12px;overflow:hidden;background:#111;aspect-ratio:16/9;margin-bottom:8px}
+        .c-track{display:flex;height:100%;transition:transform .4s ease}
+        .c-slide{min-width:100%;height:100%}
+        .c-slide img{width:100%;height:100%;object-fit:cover}
+        .c-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:grid;place-items:center;z-index:5}
+        .c-btn:hover{background:var(--accent)}
+        .c-btn.prev{left:10px}
+        .c-btn.next{right:10px}
+        .c-dots{display:flex;justify-content:center;gap:6px;margin-bottom:36px}
+        .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all .2s}
+        .dot.active{background:var(--accent);width:22px;border-radius:4px}
+        .desc{color:#b0bec5;line-height:1.8;font-size:0.95rem}
+        .desc.clamped{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+        .btn-more{background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.88rem;margin-top:8px;padding:0}
+        .forum-wrap{margin-top:40px}
+        .forum-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .btn-thread{background:var(--accent);color:#fff;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem}
+        .btn-thread:hover{background:#ff5252}
+        .new-box{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-bottom:20px;display:none}
+        .new-box h4{margin-bottom:14px;font-size:0.9rem}
+        .inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:inherit;border-radius:8px;padding:10px 12px;font-size:0.9rem;outline:none}
+        .inp:focus{border-color:var(--accent)}
+        textarea.inp{resize:vertical;min-height:90px;margin-top:8px}
+        .btn-row{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+        .btn-cancel{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer}
+        .threads{display:flex;flex-direction:column;gap:10px}
+
+        /* Thread card */
+        .t-card{background:var(--card);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;transition:all .2s;position:relative}
+        .t-card:hover{border-color:rgba(245,56,56,0.3)}
+        .t-card-body{cursor:pointer}
+        .t-title{font-weight:600;margin-bottom:5px;font-size:0.95rem}
+        .t-meta{color:var(--muted);font-size:0.8rem}
+        .t-preview{color:var(--muted);font-size:0.87rem;margin-top:7px;line-height:1.5}
+        .t-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
+        .btn-act{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;transition:all .2s}
+        .btn-act:hover{background:rgba(255,255,255,0.07);color:#e0e6ed}
+        .btn-act.del:hover{border-color:rgba(245,56,56,0.4);color:#f53838;background:rgba(245,56,56,0.07)}
+        .btn-act.edit-save{background:var(--accent);border-color:var(--accent);color:#fff}
+        .btn-act.edit-save:hover{background:#ff5252}
+
+        /* Inline edit box di thread card */
+        .t-edit-box{display:none;margin-top:10px}
+        .t-edit-box input,.t-edit-box textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:inherit;border-radius:8px;padding:9px 12px;font-size:0.88rem;outline:none;margin-bottom:6px}
+        .t-edit-box input:focus,.t-edit-box textarea:focus{border-color:var(--accent)}
+        .t-edit-box textarea{min-height:80px;resize:vertical}
+
+        .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:0.9rem}
+        .info-card{background:var(--card);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;margin-bottom:16px}
+        .info-card h4{font-size:0.8rem;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:14px}
+        .rating-center{text-align:center;padding:8px 0}
+        .r-num{font-size:3rem;font-weight:800;color:#f59e0b}
+        .r-stars{color:#f59e0b;font-size:1.2rem;margin:6px 0}
+        .r-sub{color:var(--muted);font-size:0.82rem}
+        .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.88rem}
+        .info-row:last-child{border-bottom:none}
+        .info-label{color:var(--muted)}
+        .info-value{font-weight:600;text-align:right;max-width:55%}
+
+        /* Modal */
+        .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;place-items:center;z-index:100;padding:16px}
+        .modal-bg.open{display:grid}
+        .modal{background:#202020;border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:100%;max-width:640px;max-height:85vh;display:flex;flex-direction:column}
+        .m-head{padding:16px 22px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center}
+        .m-head h3{font-size:0.95rem;font-weight:600;max-width:85%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .m-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer}
+        .m-body{padding:18px 22px;overflow-y:auto;flex:1}
+
+        /* Reply item */
+        .reply{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05)}
+        .reply:last-child{border-bottom:none}
+        .r-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+        .r-author{font-weight:600;font-size:0.87rem;color:#ff6b6b}
+        .r-time{color:var(--muted);font-size:0.77rem;margin-left:8px}
+        .r-text{line-height:1.6;font-size:0.9rem;color:#cdd6e0}
+        .r-actions{display:flex;gap:5px;flex-shrink:0}
+        .r-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.78rem;padding:3px 8px;border-radius:5px;transition:all .2s}
+        .r-btn:hover{color:#e0e6ed;background:rgba(255,255,255,0.07)}
+        .r-btn.del:hover{color:#f53838;background:rgba(245,56,56,0.1)}
+
+        /* Inline edit reply */
+        .r-edit-box{display:none;margin-top:8px}
+        .r-edit-box textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:inherit;border-radius:8px;padding:9px 12px;font-size:0.88rem;outline:none;resize:vertical;min-height:70px}
+        .r-edit-box textarea:focus{border-color:var(--accent)}
+        .r-edit-row{display:flex;gap:6px;margin-top:6px;justify-content:flex-end}
+        .r-edit-cancel{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem}
+        .r-edit-save{background:var(--accent);border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600}
+        .r-edit-save:hover{background:#ff5252}
+
+        .m-foot{padding:14px 22px;border-top:1px solid rgba(255,255,255,0.06)}
+        .m-foot textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:inherit;border-radius:8px;padding:10px 12px;font-size:0.88rem;resize:none;outline:none;min-height:75px}
+        .m-foot textarea:focus{border-color:var(--accent)}
+        .btn-send{float:right;margin-top:8px;background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem}
+        .btn-send:hover{background:#ff5252}
+
+        /* Toast notif */
+        .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#2a2a2a;border:1px solid rgba(255,255,255,0.1);color:#e0e6ed;padding:10px 20px;border-radius:10px;font-size:0.88rem;z-index:999;transition:transform .3s ease;pointer-events:none}
+        .toast.show{transform:translateX(-50%) translateY(0)}
+    </style>
+</head>
+<body>
+<header class="header">
+    <a href="/" class="back-btn">← Kembali</a>
+    <a href="/" class="logo">FL<span>A</span>ME</a>
+    <span id="hTitle" style="font-weight:600;font-size:1rem;color:var(--muted)">Detail Game</span>
+</header>
+
+<div class="hero">
+    <img class="hero-bg" id="heroBg" src="" alt="" />
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <img class="hero-thumb" id="heroThumb" src="" alt="" />
+        <div class="hero-info">
+            <span class="hero-genre" id="heroGenre">—</span>
+            <h1 id="heroTitle">Memuat...</h1>
+            <div class="hero-meta">🖥️ <span id="heroPlatform">—</span></div>
+        </div>
+        <div class="rating-badge" id="heroRating">—</div>
+    </div>
+</div>
+
+<div class="main">
+    <div>
+        <div class="section-label">Screenshot</div>
+        <div class="carousel">
+            <div class="c-track" id="cTrack"></div>
+            <button class="c-btn prev" onclick="slide(-1)">&#8249;</button>
+            <button class="c-btn next" onclick="slide(1)">&#8250;</button>
+        </div>
+        <div class="c-dots" id="cDots"></div>
+
+        <div class="section-label">Tentang Game</div>
+        <p class="desc clamped" id="descEl">Memuat...</p>
+        <button class="btn-more" id="btnMore" onclick="toggleDesc()">Baca selengkapnya ▾</button>
+
+        <div class="forum-wrap">
+            <div class="forum-top">
+                <div class="section-label" style="margin-bottom:0">Diskusi</div>
+                <button id="toggleThreadBtn" class="btn-thread" onclick="toggleForm()">+ Thread Baru</button>
+            </div>
+            <div class="new-box" id="newBox">
+                <h4>Buat Thread Baru</h4>
+                <input class="inp" id="tJudul" type="text" placeholder="Judul thread..." />
+                <textarea class="inp" id="tKonten" placeholder="Isi diskusi..."></textarea>
+                <div class="btn-row">
+                    <button class="btn-cancel" onclick="toggleForm()">Batal</button>
+                    <button class="btn-thread" onclick="kirimThread()">Kirim</button>
+                </div>
+            </div>
+            <div class="threads" id="threadList"><div class="empty">Memuat diskusi...</div></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="info-card">
+            <div class="rating-center">
+                <div class="r-num" id="sRating">—</div>
+                <div class="r-stars" id="sStars"></div>
+                <div class="r-sub">Rating RAWG</div>
+            </div>
+        </div>
+        <div class="info-card">
+            <h4>Info Game</h4>
+            <div class="info-row"><span class="info-label">Genre</span><span class="info-value" id="iGenre">—</span></div>
+            <div class="info-row"><span class="info-label">Platform</span><span class="info-value" id="iPlatform">—</span></div>
+            <div class="info-row"><span class="info-label">Rating</span><span class="info-value" id="iRating">—</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL THREAD -->
+<div class="modal-bg" id="modalBg" onclick="bgClose(event)">
+    <div class="modal">
+        <div class="m-head">
+            <h3 id="mTitle">Thread</h3>
+            <button class="m-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="m-body" id="mBody"></div>
+        <div class="m-foot">
+            <textarea id="replyTxt" placeholder="Tulis balasan..."></textarea>
+            <button class="btn-send" onclick="kirimReply()">Kirim</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var AUTH_KEY = 'flameAuthUser';
+var gameId = new URLSearchParams(location.search).get('gameId');
+var authRaw = localStorage.getItem(AUTH_KEY);
+var auth = null;
+if (authRaw) { try { auth = JSON.parse(authRaw); } catch(e) { auth = {username: authRaw}; } }
+var shots = [], cur = 0, activeThread = null, descOpen = false;
+
+if (!gameId) { location.href = '/'; }
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function xe(s){ return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c];}); }
+function tf(dt){ return dt ? new Date(dt).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''; }
+function starStr(r){ r=Math.round(r||0); var s=''; for(var i=0;i<5;i++) s+=(i<r)?'★':'☆'; return s; }
+function isOwner(username){ return auth && auth.username && auth.username === username; }
+
+function toast(msg){
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+
+function xhrJSON(method, url, data, cb){
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.onload = function(){
+        try { cb(null, JSON.parse(xhr.responseText)); }
+        catch(e){ cb(e, null); }
+    };
+    xhr.onerror = function(){ cb(new Error('network'), null); };
+    xhr.send(data ? JSON.stringify(data) : null);
+}
+
+// ── LOAD GAME ─────────────────────────────────────────────────────────────
+function loadGame(){
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/games/' + gameId);
+    xhr.onload = function(){
+        if(xhr.status !== 200) return;
+        var g = JSON.parse(xhr.responseText);
+        if(!g || !g.judul) return;
+        document.title = 'Flame — ' + g.judul;
+        document.getElementById('hTitle').textContent = g.judul;
+        var img = g.backgroundImage || ('https://picsum.photos/seed/'+g.id+'/1200/500');
+        document.getElementById('heroBg').src = img;
+        document.getElementById('heroThumb').src = img;
+        document.getElementById('heroTitle').textContent = g.judul || '—';
+        document.getElementById('heroGenre').textContent = g.genre || 'Unknown';
+        document.getElementById('heroPlatform').textContent = g.platform || '—';
+        document.getElementById('heroRating').textContent = (g.rating||0).toFixed(1) + ' ★';
+        var desc = (g.deskripsi && g.deskripsi !== '-') ? g.deskripsi : 'Deskripsi tidak tersedia.';
+        document.getElementById('descEl').textContent = desc;
+        if(desc.length < 300) document.getElementById('btnMore').style.display = 'none';
+        document.getElementById('sRating').textContent = (g.rating||0).toFixed(1);
+        document.getElementById('sStars').textContent = starStr(g.rating||0);
+        document.getElementById('iGenre').textContent = g.genre || '—';
+        document.getElementById('iPlatform').textContent = g.platform || '—';
+        document.getElementById('iRating').textContent = (g.rating||0).toFixed(1) + ' / 5';
+    };
+    xhr.send();
+}
+
+// ── SCREENSHOT ────────────────────────────────────────────────────────────
+function loadShots(){
+    var track = document.getElementById('cTrack');
+    var dots  = document.getElementById('cDots');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/games/' + gameId + '/screenshots');
+    xhr.onload = function(){
+        try {
+            var data = JSON.parse(xhr.responseText);
+            var list = (data.results || []).slice(0,5);
+            shots = list;
+            if(!list.length){ noShot(track); return; }
+            var html = '';
+            for(var i=0;i<list.length;i++) html += '<div class="c-slide"><img src="'+xe(list[i].image)+'" loading="lazy"/></div>';
+            track.innerHTML = html;
+            var dhtml = '';
+            for(var i=0;i<list.length;i++) dhtml += '<div class="dot'+(i===0?' active':'')+'" onclick="goSlide('+i+')"></div>';
+            dots.innerHTML = dhtml;
+        } catch(e){ noShot(track); }
+    };
+    xhr.onerror = function(){ noShot(track); };
+    xhr.send();
+}
+function noShot(track){
+    track.innerHTML='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#8892a0">Tidak ada screenshot</div>';
+    document.querySelector('.c-btn.prev').style.display='none';
+    document.querySelector('.c-btn.next').style.display='none';
+}
+function updCarousel(){
+    document.getElementById('cTrack').style.transform='translateX(-'+(cur*100)+'%)';
+    var ds=document.querySelectorAll('.dot');
+    for(var i=0;i<ds.length;i++) ds[i].classList.toggle('active',i===cur);
+}
+function slide(dir){ cur=(cur+dir+shots.length)%Math.max(1,shots.length); updCarousel(); }
+function goSlide(i){ cur=i; updCarousel(); }
+function toggleDesc(){
+    descOpen=!descOpen;
+    document.getElementById('descEl').classList.toggle('clamped',!descOpen);
+    document.getElementById('btnMore').textContent=descOpen?'Sembunyikan ▴':'Baca selengkapnya ▾';
+}
+
+// ── THREAD ────────────────────────────────────────────────────────────────
+function toggleForm(){
+    if(!auth || !auth.username){ location.href='/login.html'; return; }
+    var b=document.getElementById('newBox');
+    b.style.display=b.style.display==='block'?'none':'block';
+}
+
+function loadThreads(){
+    var el=document.getElementById('threadList');
+    el.innerHTML='<div class="empty">Memuat diskusi...</div>';
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','/api/forum/game/'+gameId);
+    xhr.onload=function(){
+        try {
+            var list=JSON.parse(xhr.responseText);
+            if(!list.length){ el.innerHTML='<div class="empty">💬 Belum ada diskusi. Jadilah yang pertama!</div>'; return; }
+            var html='';
+            for(var i=0;i<list.length;i++){
+                var t=list[i];
+                var mine=isOwner(t.username);
+                html += '<div class="t-card" id="tcard-'+t.id+'">'
+                      +   '<div class="t-card-body" onclick="openThread('+t.id+',\''+xe(t.judul)+'\')">'
+                      +     '<div class="t-title" id="ttitle-'+t.id+'">'+xe(t.judul)+'</div>'
+                      +     '<div class="t-meta">oleh <strong>'+xe(t.username)+'</strong> · '+tf(t.createdAt)+'</div>'
+                      +     '<div class="t-preview" id="tpreview-'+t.id+'">'+xe((t.konten||'').slice(0,120))+((t.konten||'').length>120?'...':'')+'</div>'
+                      +   '</div>'
+                      +   (mine
+                        ? '<div class="t-edit-box" id="tedit-'+t.id+'">'
+                        +   '<input id="tedit-judul-'+t.id+'" value="'+xe(t.judul)+'" placeholder="Judul..." />'
+                        +   '<textarea id="tedit-konten-'+t.id+'">'+xe(t.konten||'')+'</textarea>'
+                        +   '<div class="btn-row">'
+                        +     '<button class="btn-cancel" onclick="cancelEditThread('+t.id+')">Batal</button>'
+                        +     '<button class="btn-act edit-save" onclick="saveEditThread('+t.id+')">Simpan</button>'
+                        +   '</div>'
+                        + '</div>'
+                        + '<div class="t-actions">'
+                        +   '<button class="btn-act" onclick="startEditThread(event,'+t.id+')">✏️ Edit</button>'
+                        +   '<button class="btn-act del" onclick="deleteThread(event,'+t.id+')">🗑️ Hapus</button>'
+                        + '</div>'
+                        : '')
+                      + '</div>';
+            }
+            el.innerHTML=html;
+        } catch(e){ el.innerHTML='<div class="empty">Error saat memuat diskusi.</div>'; }
+    };
+    xhr.send();
+}
+
+function startEditThread(e, id){
+    e.stopPropagation();
+    document.getElementById('tedit-'+id).style.display='block';
+    document.getElementById('tcard-'+id).querySelector('.t-card-body').style.pointerEvents='none';
+    document.getElementById('tcard-'+id).querySelector('.t-card-body').style.opacity='0.5';
+}
+function cancelEditThread(id){
+    document.getElementById('tedit-'+id).style.display='none';
+    document.getElementById('tcard-'+id).querySelector('.t-card-body').style.pointerEvents='';
+    document.getElementById('tcard-'+id).querySelector('.t-card-body').style.opacity='';
+}
+function saveEditThread(id){
+    if(!auth) return;
+    var judul  = document.getElementById('tedit-judul-'+id).value.trim();
+    var konten = document.getElementById('tedit-konten-'+id).value.trim();
+    if(!judul||!konten){ toast('Judul dan isi tidak boleh kosong!'); return; }
+    xhrJSON('PUT','/api/forum/thread/'+id,{judul:judul,konten:konten,username:auth.username},function(err,d){
+        if(d && d.success){
+            toast('Thread berhasil diperbarui ✓');
+            loadThreads();
+        } else {
+            toast((d && d.message) || 'Gagal memperbarui thread');
+        }
+    });
+}
+function deleteThread(e, id){
+    e.stopPropagation();
+    if(!confirm('Hapus thread ini beserta semua balasannya?')) return;
+    if(!auth) return;
+    xhrJSON('DELETE','/api/forum/thread/'+id,{username:auth.username},function(err,d){
+        if(d && d.success){ toast('Thread dihapus ✓'); loadThreads(); }
+        else toast((d && d.message) || 'Gagal menghapus thread');
+    });
+}
+
+function kirimThread(){
+    if(!auth){ location.href='/login.html'; return; }
+    var judul  = document.getElementById('tJudul').value.trim();
+    var konten = document.getElementById('tKonten').value.trim();
+    if(!judul||!konten){ toast('Judul dan isi wajib diisi!'); return; }
+    xhrJSON('POST','/api/forum/thread',{judul:judul,konten:konten,username:auth.username,gameId:parseInt(gameId)},function(err,d){
+        if(d && d.success){
+            document.getElementById('tJudul').value='';
+            document.getElementById('tKonten').value='';
+            toggleForm();
+            loadThreads();
+            toast('Thread berhasil dibuat ✓');
+        } else toast((d && d.message) || 'Gagal membuat thread');
+    });
+}
+
+// ── REPLY ─────────────────────────────────────────────────────────────────
+function openThread(id, title){
+    activeThread=id;
+    document.getElementById('mTitle').textContent=title;
+    document.getElementById('mBody').innerHTML='<div class="empty">Memuat...</div>';
+    document.getElementById('modalBg').classList.add('open');
+    document.getElementById('replyTxt').value='';
+    loadReplies(id);
+}
+
+function loadReplies(id){
+    var body=document.getElementById('mBody');
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','/api/forum/thread/'+id+'/replies');
+    xhr.onload=function(){
+        try {
+            var list=JSON.parse(xhr.responseText);
+            if(!list.length){ body.innerHTML='<div class="empty">Belum ada balasan. Jadilah yang pertama!</div>'; return; }
+            var html='';
+            for(var i=0;i<list.length;i++){
+                var r=list[i];
+                var mine=isOwner(r.username);
+                html += '<div class="reply" id="reply-'+r.id+'">'
+                      +   '<div class="r-top">'
+                      +     '<div>'
+                      +       '<span class="r-author">'+xe(r.username)+'</span>'
+                      +       '<span class="r-time">'+tf(r.createdAt)+'</span>'
+                      +     '</div>'
+                      +     (mine
+                          ? '<div class="r-actions">'
+                          +   '<button class="r-btn" onclick="startEditReply('+r.id+')">✏️</button>'
+                          +   '<button class="r-btn del" onclick="deleteReply('+r.id+')">🗑️</button>'
+                          + '</div>'
+                          : '')
+                      +   '</div>'
+                      +   '<div class="r-text" id="rtext-'+r.id+'">'+xe(r.konten)+'</div>'
+                      +   (mine
+                        ? '<div class="r-edit-box" id="redit-'+r.id+'">'
+                        +   '<textarea id="redit-txt-'+r.id+'">'+xe(r.konten)+'</textarea>'
+                        +   '<div class="r-edit-row">'
+                        +     '<button class="r-edit-cancel" onclick="cancelEditReply('+r.id+')">Batal</button>'
+                        +     '<button class="r-edit-save" onclick="saveEditReply('+r.id+')">Simpan</button>'
+                        +   '</div>'
+                        + '</div>'
+                        : '')
+                      + '</div>';
+            }
+            body.innerHTML=html;
+            body.scrollTop=body.scrollHeight;
+        } catch(e){ body.innerHTML='<div class="empty">Error saat memuat balasan.</div>'; }
+    };
+    xhr.send();
+}
+
+function startEditReply(id){
+    document.getElementById('rtext-'+id).style.display='none';
+    document.getElementById('redit-'+id).style.display='block';
+}
+function cancelEditReply(id){
+    document.getElementById('rtext-'+id).style.display='';
+    document.getElementById('redit-'+id).style.display='none';
+}
+function saveEditReply(id){
+    if(!auth) return;
+    var konten=document.getElementById('redit-txt-'+id).value.trim();
+    if(!konten){ toast('Balasan tidak boleh kosong!'); return; }
+    xhrJSON('PUT','/api/forum/reply/'+id,{konten:konten,username:auth.username},function(err,d){
+        if(d && d.success){
+            toast('Balasan diperbarui ✓');
+            loadReplies(activeThread);
+        } else toast((d && d.message) || 'Gagal memperbarui balasan');
+    });
+}
+function deleteReply(id){
+    if(!confirm('Hapus balasan ini?')) return;
+    if(!auth) return;
+    xhrJSON('DELETE','/api/forum/reply/'+id,{username:auth.username},function(err,d){
+        if(d && d.success){ toast('Balasan dihapus ✓'); loadReplies(activeThread); }
+        else toast((d && d.message) || 'Gagal menghapus balasan');
+    });
+}
+
+function kirimReply(){
+    if(!auth){ location.href='/login.html'; return; }
+    var konten=document.getElementById('replyTxt').value.trim();
+    if(!konten){ toast('Balasan tidak boleh kosong!'); return; }
+    xhrJSON('POST','/api/forum/reply',{konten:konten,username:auth.username,threadId:activeThread},function(err,d){
+        if(d && d.success){ document.getElementById('replyTxt').value=''; loadReplies(activeThread); }
+        else toast((d && d.message) || 'Gagal mengirim balasan');
+    });
+}
+
+function bgClose(e){ if(e.target===document.getElementById('modalBg')) closeModal(); }
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); activeThread=null; }
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+window.addEventListener('load', function(){
+    loadGame();
+    loadShots();
+    loadThreads();
+    // Update tombol jika tidak login
+    if(!auth || !auth.username){
+        var btn=document.getElementById('toggleThreadBtn');
+        btn.textContent='Login untuk membuat thread';
+        btn.onclick=function(){ location.href='/login.html'; };
+    }
+});
+</script>
+</body>
+</html>

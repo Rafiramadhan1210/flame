@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tentang — Flame</title>
+    <style>
+        :root{--bg:#1a1a1a;--card:#2a2a2a;--muted:#8892a0;--accent:#f53838;--accent-light:#ff6b6b}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;min-height:100vh;background:var(--bg);color:#e0e6ed}
+        .wrapper{display:flex;min-height:100vh}
+        .sidebar{width:200px;background:#1a1a1a;border-right:1px solid rgba(255,255,255,0.06);padding:20px 0;overflow-y:auto;position:sticky;top:0;max-height:100vh;flex-shrink:0}
+        .sidebar-logo{padding:0 16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px}
+        .sidebar-logo-mark{font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-1px}
+        .sidebar-logo-mark span{color:var(--accent)}
+        .sidebar-section{padding:0 12px;margin-bottom:20px}
+        .sidebar-section h3{margin:0 0 6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;padding:0 8px}
+        .sidebar-links{list-style:none;margin:0;padding:0}
+        .sidebar-links a{display:block;padding:8px;margin-bottom:2px;color:#ccc;text-decoration:none;border-radius:6px;font-size:0.88rem;transition:all .15s ease;font-weight:500}
+        .sidebar-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
+        .sidebar-links a.active{color:#fff;background:rgba(255,255,255,0.08)}
+        .main{flex:1;display:flex;flex-direction:column;min-width:0}
+        .header{background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+        .header-left{display:flex;align-items:center;gap:14px;flex:1}
+        .search-bar{flex:1;max-width:480px;display:flex;align-items:center;background:#2a2a2a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 14px;gap:8px}
+        .search-bar input{flex:1;background:0;border:0;color:inherit;font-size:0.9rem;outline:0}
+        .search-bar input::placeholder{color:var(--muted)}
+        .header-right{display:flex;gap:10px;align-items:center}
+        .btn{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all .2s ease}
+        .btn.primary{background:var(--accent);color:#fff}
+        .btn.primary:hover{background:#d42f2f}
+        .content-body{padding:40px 32px;max-width:760px}
+        .page-title{font-size:2.2rem;font-weight:900;margin:0 0 8px;color:#fff;letter-spacing:-0.5px}
+        .page-subtitle{color:var(--muted);margin:0 0 32px;font-size:1rem}
+        .about-card{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:28px;margin-bottom:20px}
+        .about-card h2{margin:0 0 12px;font-size:1.15rem;color:#fff;font-weight:700}
+        .about-card p{margin:0 0 12px;color:#c5cdd6;line-height:1.7;font-size:0.95rem}
+        .about-card p:last-child{margin-bottom:0}
+        .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:8px}
+        .feature-item{background:rgba(245,56,56,0.06);border:1px solid rgba(245,56,56,0.15);border-radius:8px;padding:16px}
+        .feature-item .emoji{font-size:1.5rem;margin-bottom:8px;display:block}
+        .feature-item h3{margin:0 0 6px;font-size:0.95rem;color:#fff;font-weight:700}
+        .feature-item p{margin:0;font-size:0.85rem;color:var(--muted)}
+        footer{padding:24px 32px;border-top:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:0.82rem;text-align:center}
+        @media(max-width:680px){.wrapper{flex-direction:column}.sidebar{width:100%;max-height:none;border-right:0;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}.content-body{padding:24px 20px}}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-mark">FL<span>A</span>ME</div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Jelajahi</h3>
+            <div class="sidebar-links">
+                <a href="/">Beranda</a>
+                <a href="/categories">Kategori</a>
+                <a href="#">Rilis Baru</a>
+                <a href="#">Top 2026</a>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Genre</h3>
+            <div class="sidebar-links">
+                <a href="/?genre=Action">Action</a>
+                <a href="/?genre=Adventure">Adventure</a>
+                <a href="/?genre=RPG">RPG</a>
+                <a href="/?genre=Sports">Sports</a>
+                <a href="/?genre=Strategy">Strategy</a>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Akun</h3>
+            <div class="sidebar-links" id="accountLinks">
+                <a href="/login.html" id="loginLink">Login</a>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Lainnya</h3>
+            <div class="sidebar-links">
+                <a href="/about.html" class="active">Tentang</a>
+                <a href="/contact.html">Kontak</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <div class="search-bar">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></svg>
+                    <input type="text" placeholder="Cari game, genre, atau platform..." onfocus="window.location.href='/'" />
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn primary" id="loginBtn">Login</button>
+            </div>
+        </header>
+
+        <div class="content-body">
+            <h1 class="page-title">Tentang Flame</h1>
+            <p class="page-subtitle">Platform rekomendasi dan diskusi game untuk para gamer Indonesia</p>
+
+            <div class="about-card">
+                <h2>Apa itu Flame?</h2>
+                <p>Flame adalah platform yang membantu kamu menemukan game terbaik berdasarkan genre, platform, dan rating. Data game diambil dan disinkronkan dari basis data game terbesar, lalu disajikan dengan antarmuka yang sederhana dan cepat.</p>
+                <p>Selain menemukan rekomendasi, Flame juga menjadi tempat diskusi antar pemain melalui forum di setiap halaman detail game.</p>
+            </div>
+
+            <div class="about-card">
+                <h2>Fitur Utama</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <span class="emoji">🎮</span>
+                        <h3>Katalog Game</h3>
+                        <p>Ribuan game dengan info genre, platform, dan rating</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="emoji">⭐</span>
+                        <h3>Filter & Urutkan</h3>
+                        <p>Cari game sesuai mood dan preferensi kamu</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="emoji">💬</span>
+                        <h3>Forum Diskusi</h3>
+                        <p>Diskusikan game favorit dengan pemain lain</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="emoji">👤</span>
+                        <h3>Profil Pengguna</h3>
+                        <p>Lihat riwayat thread dan balasan yang kamu buat</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-card">
+                <h2>Tim di Balik Flame</h2>
+                <p>Flame dikembangkan sebagai proyek pembelajaran integrasi backend Spring Boot dengan frontend modern, menggabungkan data eksternal dan fitur komunitas dalam satu aplikasi.</p>
+            </div>
+        </div>
+
+        <footer>© 2026 Flame. Temukan game yang sempurna untuk setiap mood dan platform.</footer>
+    </main>
+</div>
+
+<script>
+    const AUTH_KEY = 'flameAuthUser';
+    function isAuth(){ return !!localStorage.getItem(AUTH_KEY); }
+    function updateAuthUI(){
+        const loginBtn = document.getElementById('loginBtn');
+        const accountLinks = document.getElementById('accountLinks');
+        if(isAuth()){
+            const user = JSON.parse(localStorage.getItem(AUTH_KEY));
+            loginBtn.textContent = '👤 ' + user.username;
+            loginBtn.onclick = () => window.location.href = '/profile.html';
+            accountLinks.innerHTML = `
+                <a href="/profile.html">👤 ${user.username}</a>
+                <a href="#" onclick="logout(event)">Logout</a>`;
+        } else {
+            loginBtn.textContent = 'Login';
+            loginBtn.onclick = () => window.location.href = '/login.html';
+            accountLinks.innerHTML = `<a href="/login.html">Login</a>`;
+        }
+    }
+    function logout(event){
+        event.preventDefault();
+        if(confirm('Yakin mau logout?')){
+            localStorage.removeItem(AUTH_KEY);
+            window.location.reload();
+        }
+    }
+    updateAuthUI();
+</script>
+</body>
+</html>

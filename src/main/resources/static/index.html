@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flame — Rekomendasi Game</title>
+    <style>
+        :root{--bg:#1a1a1a;--card:#2a2a2a;--muted:#8892a0;--accent:#f53838;--accent-light:#ff6b6b}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;min-height:100vh;background:var(--bg);color:#e0e6ed}
+        .wrapper{display:flex;min-height:100vh}
+
+        /* SIDEBAR */
+        .sidebar{width:200px;background:#1a1a1a;border-right:1px solid rgba(255,255,255,0.06);padding:20px 0;overflow-y:auto;position:sticky;top:0;max-height:100vh;flex-shrink:0}
+        .sidebar-logo{padding:0 16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px}
+        .sidebar-logo-mark{font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-1px}
+        .sidebar-logo-mark span{color:var(--accent)}
+        .sidebar-section{padding:0 12px;margin-bottom:20px}
+        .sidebar-section h3{margin:0 0 6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;padding:0 8px}
+        .sidebar-links{list-style:none;margin:0;padding:0}
+        .sidebar-links a{display:block;padding:8px;margin-bottom:2px;color:#ccc;text-decoration:none;border-radius:6px;font-size:0.88rem;transition:all .15s ease;font-weight:500}
+        .sidebar-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
+        .sidebar-links a.active{color:#fff;background:rgba(255,255,255,0.08)}
+
+        /* MAIN */
+        .main{flex:1;display:flex;flex-direction:column;min-width:0}
+        .header{background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+        .header-left{display:flex;align-items:center;gap:14px;flex:1}
+        .search-bar{flex:1;max-width:480px;display:flex;align-items:center;background:#2a2a2a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 14px;gap:8px}
+        .search-bar input{flex:1;background:0;border:0;color:inherit;font-size:0.9rem;outline:0}
+        .search-bar input::placeholder{color:var(--muted)}
+        .header-right{display:flex;gap:10px;align-items:center}
+        .btn{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all .2s ease}
+        .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted)}
+        .btn.ghost:hover{background:rgba(255,255,255,0.06);color:#fff}
+        .btn.primary{background:var(--accent);color:#fff}
+        .btn.primary:hover{background:#d42f2f}
+        .content{flex:1;padding:0;overflow-y:auto}
+
+        /* HERO — mirip RAWG: judul besar + mosaic background transparan */
+        .hero-section{
+            position:relative;
+            padding:52px 32px 44px;
+            overflow:hidden;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+        /* Mosaic gambar di background */
+        .hero-mosaic{
+            position:absolute;
+            inset:0;
+            display:grid;
+            grid-template-columns:repeat(7,1fr);
+            grid-template-rows:1fr;
+            gap:3px;
+            opacity:0.22;
+            pointer-events:none;
+        }
+        .hero-mosaic img{
+            width:100%;height:100%;
+            object-fit:cover;
+            filter:saturate(0.7) brightness(0.8);
+        }
+        /* Gradient kiri supaya teks terbaca */
+        .hero-gradient{
+            position:absolute;
+            inset:0;
+            background:linear-gradient(90deg,#1a1a1a 25%,rgba(26,26,26,0.85) 55%,rgba(26,26,26,0.3) 100%);
+            pointer-events:none;
+        }
+        /* Gradient bawah */
+        .hero-gradient-bottom{
+            position:absolute;
+            bottom:0;left:0;right:0;height:80px;
+            background:linear-gradient(to top,#1a1a1a,transparent);
+            pointer-events:none;
+        }
+        .hero-content{position:relative;z-index:1}
+        .hero-tag{
+            display:inline-block;
+            font-size:0.72rem;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:2px;
+            color:var(--muted);
+            margin-bottom:10px;
+        }
+        .hero-title{
+            font-size:2.6rem;
+            font-weight:900;
+            margin:0 0 8px;
+            line-height:1.1;
+            letter-spacing:-0.5px;
+            color:#fff;
+        }
+        .hero-subtitle{
+            color:var(--muted);
+            margin:0;
+            font-size:0.95rem;
+            font-weight:400;
+        }
+
+        /* CONTENT AREA */
+        .content-body{padding:28px 32px}
+
+        /* ORDER BAR mirip RAWG */
+        .order-bar{
+            display:flex;align-items:center;justify-content:space-between;
+            margin-bottom:20px;gap:12px;flex-wrap:wrap;
+        }
+        .order-bar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .order-label{font-size:0.85rem;color:var(--muted);font-weight:500}
+        .order-select{
+            background:#2a2a2a;border:1px solid rgba(255,255,255,0.1);
+            color:#e0e6ed;border-radius:6px;padding:7px 12px;
+            font-size:0.85rem;cursor:pointer;
+        }
+        .filter-pill{
+            background:#2a2a2a;border:1px solid rgba(255,255,255,0.1);
+            color:#e0e6ed;border-radius:6px;padding:7px 12px;
+            font-size:0.85rem;cursor:pointer;
+        }
+        .btn-reset{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted);border-radius:6px;padding:7px 12px;font-size:0.82rem;cursor:pointer;transition:.2s}
+        .btn-reset:hover{color:#fff;border-color:rgba(255,255,255,0.25)}
+
+        /* GAME GRID — landscape cards mirip RAWG */
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+            gap:16px;
+        }
+        .game-card{
+            background:#252525;
+            border-radius:10px;
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,0.05);
+            transition:all .25s ease;
+            cursor:pointer;
+        }
+        .game-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.12);background:#2c2c2c}
+        .game-poster{
+            position:relative;
+            width:100%;
+            aspect-ratio:16/9;
+            overflow:hidden;
+            background:#111;
+        }
+        .game-poster img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease}
+        .game-card:hover .game-poster img{transform:scale(1.04)}
+        .game-badge{
+            position:absolute;top:8px;left:8px;
+            background:rgba(0,0,0,0.65);
+            backdrop-filter:blur(4px);
+            color:#fff;padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600
+        }
+        .game-rating{
+            position:absolute;bottom:8px;right:8px;
+            background:var(--accent);color:#fff;
+            padding:3px 8px;border-radius:4px;
+            font-weight:700;font-size:0.82rem;
+        }
+        .game-info{padding:12px 14px}
+        .game-title{margin:0 0 5px;font-size:0.92rem;font-weight:700;line-height:1.35;color:#fff}
+        .game-meta{color:var(--muted);font-size:0.78rem;margin:0;display:flex;gap:8px;align-items:center}
+        .game-meta-dot{width:3px;height:3px;background:var(--muted);border-radius:50%;flex-shrink:0}
+
+        footer{padding:24px 32px;border-top:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:0.82rem;text-align:center}
+
+        @media(max-width:900px){
+            .sidebar{width:160px}
+            .grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+            .hero-title{font-size:2rem}
+        }
+        @media(max-width:680px){
+            .wrapper{flex-direction:column}
+            .sidebar{width:100%;max-height:none;border-right:0;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+            .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+            .hero-section{padding:36px 20px 32px}
+            .content-body{padding:20px}
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-mark">FL<span>A</span>ME</div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Jelajahi</h3>
+            <div class="sidebar-links">
+                <a href="/" class="active">Beranda</a>
+                <a href="/categories">Kategori</a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Genre</h3>
+            <div class="sidebar-links">
+                <a href="#" onclick="applyGenreFilter('Action');return false">Action</a>
+                <a href="#" onclick="applyGenreFilter('Adventure');return false">Adventure</a>
+                <a href="#" onclick="applyGenreFilter('RPG');return false">RPG</a>
+                <a href="#" onclick="applyGenreFilter('Sports');return false">Sports</a>
+                <a href="#" onclick="applyGenreFilter('Strategy');return false">Strategy</a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Akun</h3>
+            <div class="sidebar-links">
+                <a href="/login.html" id="loginLink">Login</a>
+                <a href="#" id="logoutLink" style="display:none" onclick="logout(event)">Logout</a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Lainnya</h3>
+            <div class="sidebar-links">
+                <a href="/about.html">Tentang</a>
+                <a href="/contact.html">Kontak</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <div class="search-bar">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></svg>
+                    <input id="searchInput" type="text" placeholder="Cari game, genre, atau platform..." />
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn primary" id="loginBtn">Login</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- HERO mirip RAWG -->
+            <section class="hero-section">
+                <div class="hero-mosaic" id="heroMosaic"></div>
+                <div class="hero-gradient"></div>
+                <div class="hero-gradient-bottom"></div>
+                <div class="hero-content">
+                    <div class="hero-tag">Flame · Rekomendasi</div>
+                    <h1 class="hero-title">Game Terbaik<br>& Populer</h1>
+                    <p class="hero-subtitle">Temukan game favorit berdasarkan genre, platform, dan rating</p>
+                </div>
+            </section>
+
+            <div class="content-body">
+                <!-- ORDER BAR mirip RAWG -->
+                <div class="order-bar">
+                    <div class="order-bar-left">
+                        <span class="order-label">Urutkan:</span>
+                        <select class="order-select" id="sortSelect">
+                            <option value="rating-desc">Rating Tertinggi</option>
+                            <option value="rating-asc">Rating Terendah</option>
+                            <option value="name">Nama (A-Z)</option>
+                        </select>
+                        <select class="filter-pill" id="filterPlatform">
+                            <option value="">Semua Platform</option>
+                        </select>
+                        <select class="filter-pill" id="filterRating">
+                            <option value="0">Semua Rating</option>
+                            <option value="4">4.0+</option>
+                            <option value="3">3.0+</option>
+                            <option value="2">2.0+</option>
+                        </select>
+                    </div>
+                    <button class="btn-reset" id="resetFiltersBtn">Reset Filter</button>
+                </div>
+
+                <div class="grid" id="gameGrid"></div>
+            </div>
+
+            <footer>© 2026 Flame. Temukan game yang sempurna untuk setiap mood dan platform.</footer>
+        </div>
+    </main>
+</div>
+
+<script>
+    const AUTH_KEY = 'flameAuthUser';
+    const searchInput     = document.getElementById('searchInput');
+    const gameGrid        = document.getElementById('gameGrid');
+    const loginBtn        = document.getElementById('loginBtn');
+    const sortSelect      = document.getElementById('sortSelect');
+    const filterPlatform  = document.getElementById('filterPlatform');
+    const filterRating    = document.getElementById('filterRating');
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    const loginLink       = document.getElementById('loginLink');
+    let allGames = [];
+
+    // Isi hero mosaic
+    (function(){
+        const m = document.getElementById('heroMosaic');
+        const seeds = [237,456,123,789,555,321,654];
+        m.innerHTML = seeds.map(s=>`<img src="https://picsum.photos/seed/${s}/400/300" alt="" loading="lazy"/>`).join('');
+    })();
+
+    function escapeHtml(s){
+        return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    }
+
+    function isAuth(){ return !!localStorage.getItem(AUTH_KEY); }
+
+    function logout(event){
+        event.preventDefault();
+        if(confirm('Yakin mau logout?')){
+            localStorage.removeItem(AUTH_KEY);
+            location.reload();
+        }
+    }
+
+    function updateAuthUI(){
+        const auth = isAuth();
+        const logoutLink = document.getElementById('logoutLink');
+        if(auth){
+            const user = JSON.parse(localStorage.getItem(AUTH_KEY));
+            loginBtn.textContent = '👤 ' + user.username;
+            loginBtn.onclick = () => window.location.href = '/profile.html';
+            loginLink.textContent = '👤 ' + user.username;
+            loginLink.href = '/profile.html';
+            if(logoutLink) logoutLink.style.display = 'block';
+        } else {
+            loginBtn.textContent = 'Login';
+            loginBtn.onclick = () => window.location.href = '/login.html';
+            loginLink.textContent = 'Login';
+            if(logoutLink) logoutLink.style.display = 'none';
+        }
+    }
+
+    function renderGameCard(g){
+        const seed   = encodeURIComponent(g.id || g.judul || Math.random());
+        const img    = g.backgroundImage || `https://picsum.photos/seed/${seed}/600/340`;
+        const rating = (g.rating || 0).toFixed(1);
+        const platform = escapeHtml(g.platform||'N/A');
+        const genre    = escapeHtml(g.genre||'Unknown');
+        return `<article class="game-card" onclick="bukaDetail(${g.id})">
+            <div class="game-poster">
+                <img src="${escapeHtml(img)}" alt="${escapeHtml(g.judul||'Game')}" loading="lazy"/>
+                <div class="game-badge">${genre}</div>
+                <div class="game-rating">★ ${rating}</div>
+            </div>
+            <div class="game-info">
+                <h3 class="game-title">${escapeHtml(g.judul||'Untitled')}</h3>
+                <p class="game-meta">${platform}<span class="game-meta-dot"></span>${genre}</p>
+            </div>
+        </article>`;
+    }
+
+    function bukaDetail(gameId){ window.location.href = `/game-detail.html?gameId=${gameId}`; }
+
+    async function fetchGames(url){
+        try{
+            const r = await fetch(url);
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            return await r.json();
+        }catch(e){ console.error(e); return []; }
+    }
+
+    function updatePlatformFilter(games){
+        const platforms = Array.from(new Set(games.map(g=>(g.platform||'Unknown').trim()).filter(Boolean)));
+        filterPlatform.innerHTML = '<option value="">Semua Platform</option>'
+            + platforms.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+    }
+
+    async function loadGames(){
+        gameGrid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);padding:40px;text-align:center">Memuat game...</div>';
+        allGames = await fetchGames('/api/games');
+        if(allGames.length) updatePlatformFilter(allGames);
+        applyFilters();
+    }
+
+    function applyFilters(){
+        const query     = searchInput.value.trim().toLowerCase();
+        const platform  = filterPlatform.value;
+        const minRating = parseFloat(filterRating.value) || 0;
+        const sortBy    = sortSelect.value;
+
+        let filtered = allGames.filter(g => {
+            const matchQuery    = !query || (g.judul||'').toLowerCase().includes(query) || (g.genre||'').toLowerCase().includes(query) || (g.platform||'').toLowerCase().includes(query);
+            const matchPlatform = !platform || (g.platform||'').toLowerCase() === platform.toLowerCase();
+            const matchRating   = (g.rating||0) >= minRating;
+            return matchQuery && matchPlatform && matchRating;
+        });
+
+        if(sortBy==='rating-desc') filtered.sort((a,b)=>(b.rating||0)-(a.rating||0));
+        else if(sortBy==='rating-asc') filtered.sort((a,b)=>(a.rating||0)-(b.rating||0));
+        else if(sortBy==='name') filtered.sort((a,b)=>(a.judul||'').localeCompare(b.judul||''));
+
+        gameGrid.innerHTML = filtered.length
+            ? filtered.map(renderGameCard).join('')
+            : '<div style="grid-column:1/-1;color:var(--muted);padding:40px;text-align:center">Tidak ada game ditemukan</div>';
+    }
+
+    function applyGenreFilter(genre){ searchInput.value=genre; applyFilters(); }
+
+    searchInput.addEventListener('input', applyFilters);
+    sortSelect.addEventListener('change', applyFilters);
+    filterPlatform.addEventListener('change', applyFilters);
+    filterRating.addEventListener('change', applyFilters);
+    resetFiltersBtn.addEventListener('click', ()=>{
+        searchInput.value=''; filterPlatform.value=''; filterRating.value='0'; sortSelect.value='rating-desc';
+        applyFilters();
+    });
+
+    loadGames();
+    updateAuthUI();
+</script>
+</body>
+</html>

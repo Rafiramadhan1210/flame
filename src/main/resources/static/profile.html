@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profil — Flame</title>
+    <style>
+        :root{--bg:#1a1a1a;--card:#2a2a2a;--muted:#8892a0;--accent:#f53838;--accent-light:#ff6b6b}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;min-height:100vh;background:var(--bg);color:#e0e6ed}
+        .wrapper{display:flex;min-height:100vh}
+        .sidebar{width:200px;background:#1a1a1a;border-right:1px solid rgba(255,255,255,0.06);padding:20px 0;overflow-y:auto;position:sticky;top:0;max-height:100vh;flex-shrink:0}
+        .sidebar-logo{padding:0 16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px}
+        .sidebar-logo-mark{font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-1px}
+        .sidebar-logo-mark span{color:var(--accent)}
+        .sidebar-section{padding:0 12px;margin-bottom:20px}
+        .sidebar-section h3{margin:0 0 6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;padding:0 8px}
+        .sidebar-links{list-style:none;margin:0;padding:0}
+        .sidebar-links a{display:block;padding:8px;margin-bottom:2px;color:#ccc;text-decoration:none;border-radius:6px;font-size:0.88rem;transition:all .15s ease;font-weight:500}
+        .sidebar-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
+        .sidebar-links a.active{color:#fff;background:rgba(255,255,255,0.08)}
+        .main{flex:1;display:flex;flex-direction:column;min-width:0}
+        .header{background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+        .header-left{display:flex;align-items:center;gap:14px;flex:1}
+        .search-bar{flex:1;max-width:480px;display:flex;align-items:center;background:#2a2a2a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 14px;gap:8px}
+        .search-bar input{flex:1;background:0;border:0;color:inherit;font-size:0.9rem;outline:0}
+        .search-bar input::placeholder{color:var(--muted)}
+        .header-right{display:flex;gap:10px;align-items:center}
+        .btn{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all .2s ease}
+        .btn.primary{background:var(--accent);color:#fff}
+        .btn.primary:hover{background:#d42f2f}
+        .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted)}
+        .btn.ghost:hover{background:rgba(255,255,255,0.06);color:#fff}
+        .content-body{padding:0 32px 40px;max-width:900px}
+
+        /* Profile header banner */
+        .profile-banner{
+            position:relative;margin:0 -32px 32px;padding:48px 32px 32px;
+            background:linear-gradient(135deg,rgba(245,56,56,0.18),rgba(26,26,26,0.4));
+            border-bottom:1px solid rgba(255,255,255,0.06);
+            display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+        }
+        .avatar-circle{
+            width:84px;height:84px;border-radius:50%;
+            background:linear-gradient(135deg,var(--accent),#ff8a80);
+            display:grid;place-items:center;color:#fff;font-weight:800;font-size:2rem;
+            flex-shrink:0;border:3px solid rgba(255,255,255,0.1);
+        }
+        .profile-info h1{margin:0 0 4px;font-size:1.7rem;font-weight:800;color:#fff}
+        .profile-info p{margin:0;color:var(--muted);font-size:0.9rem}
+        .profile-stats{display:flex;gap:24px;margin-top:12px}
+        .stat-item{display:flex;flex-direction:column}
+        .stat-num{font-size:1.3rem;font-weight:800;color:#fff}
+        .stat-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+
+        .section-block{margin-bottom:32px}
+        .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+        .section-header h2{margin:0;font-size:1.1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+        .tab-count{background:rgba(245,56,56,0.15);color:var(--accent-light);padding:2px 9px;border-radius:20px;font-size:0.78rem;font-weight:700}
+
+        .item-card{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:all .2s ease}
+        .item-card:hover{border-color:rgba(255,255,255,0.15);background:#303030}
+        .item-title{margin:0 0 4px;font-size:0.95rem;font-weight:700;color:#fff}
+        .item-snippet{margin:0 0 8px;font-size:0.85rem;color:#c5cdd6;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+        .item-meta{font-size:0.75rem;color:var(--muted);display:flex;gap:10px;align-items:center}
+        .reply-on{color:var(--accent-light);font-weight:600}
+
+        .empty-state{background:var(--card);border:1px dashed rgba(255,255,255,0.1);border-radius:10px;padding:32px;text-align:center;color:var(--muted);font-size:0.9rem}
+
+        .login-prompt{padding:60px 32px;text-align:center}
+        .login-prompt h2{color:#fff;font-size:1.4rem;margin-bottom:8px}
+        .login-prompt p{color:var(--muted);margin-bottom:20px}
+
+        footer{padding:24px 32px;border-top:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:0.82rem;text-align:center}
+
+        @media(max-width:680px){
+            .wrapper{flex-direction:column}
+            .sidebar{width:100%;max-height:none;border-right:0;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+            .content-body{padding:0 20px 24px}
+            .profile-banner{margin:0 -20px 24px;padding:32px 20px 24px}
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-mark">FL<span>A</span>ME</div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Jelajahi</h3>
+            <div class="sidebar-links">
+                <a href="/">Beranda</a>
+                <a href="/categories">Kategori</a>
+                <a href="#">Rilis Baru</a>
+                <a href="#">Top 2026</a>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Genre</h3>
+            <div class="sidebar-links">
+                <a href="/?genre=Action">Action</a>
+                <a href="/?genre=Adventure">Adventure</a>
+                <a href="/?genre=RPG">RPG</a>
+                <a href="/?genre=Sports">Sports</a>
+                <a href="/?genre=Strategy">Strategy</a>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Akun</h3>
+            <div class="sidebar-links" id="accountLinks">
+                <a href="/login.html" id="loginLink">Login</a>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3>Lainnya</h3>
+            <div class="sidebar-links">
+                <a href="/about.html">Tentang</a>
+                <a href="/contact.html">Kontak</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <div class="search-bar">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></svg>
+                    <input type="text" placeholder="Cari game, genre, atau platform..." onfocus="window.location.href='/'" />
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn primary" id="loginBtn">Login</button>
+            </div>
+        </header>
+
+        <div id="pageContent"></div>
+
+        <footer>© 2026 Flame. Temukan game yang sempurna untuk setiap mood dan platform.</footer>
+    </main>
+</div>
+
+<script>
+    const AUTH_KEY = 'flameAuthUser';
+    const pageContent = document.getElementById('pageContent');
+
+    function escapeHtml(s){
+        return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    }
+
+    function isAuth(){ return !!localStorage.getItem(AUTH_KEY); }
+    function getUser(){ return isAuth() ? JSON.parse(localStorage.getItem(AUTH_KEY)) : null; }
+
+    function logout(event){
+        event.preventDefault();
+        if(confirm('Yakin mau logout?')){
+            localStorage.removeItem(AUTH_KEY);
+            window.location.href = '/';
+        }
+    }
+
+    function updateAuthUI(){
+        const loginBtn = document.getElementById('loginBtn');
+        const accountLinks = document.getElementById('accountLinks');
+        const user = getUser();
+        if(user){
+            loginBtn.textContent = '👤 ' + user.username;
+            loginBtn.onclick = () => window.location.href = '/profile.html';
+            accountLinks.innerHTML = `
+                <a href="/profile.html" class="active">👤 ${escapeHtml(user.username)}</a>
+                <a href="#" onclick="logout(event)">Logout</a>`;
+        } else {
+            loginBtn.textContent = 'Login';
+            loginBtn.onclick = () => window.location.href = '/login.html';
+            accountLinks.innerHTML = `<a href="/login.html">Login</a>`;
+        }
+    }
+
+    function formatDate(iso){
+        if(!iso) return '';
+        const d = new Date(iso);
+        return d.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    function renderLoginPrompt(){
+        pageContent.innerHTML = `
+            <div class="content-body">
+                <div class="login-prompt">
+                    <h2>Kamu belum login</h2>
+                    <p>Login untuk melihat profil, thread, dan balasan yang pernah kamu buat.</p>
+                    <button class="btn primary" onclick="window.location.href='/login.html'">Login Sekarang</button>
+                </div>
+            </div>`;
+    }
+
+    async function fetchJson(url){
+        try{
+            const r = await fetch(url);
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            return await r.json();
+        }catch(e){ console.error(e); return []; }
+    }
+
+    function renderThreadCard(t){
+        return `<div class="item-card" onclick="window.location.href='/game-detail.html?gameId=${t.gameId}'">
+            <h3 class="item-title">${escapeHtml(t.judul)}</h3>
+            <p class="item-snippet">${escapeHtml(t.konten)}</p>
+            <div class="item-meta">
+                <span>🕒 ${formatDate(t.createdAt)}</span>
+            </div>
+        </div>`;
+    }
+
+    function renderReplyCard(r){
+        return `<div class="item-card" onclick="window.location.href='/game-detail.html?gameId=${r.gameId||''}'">
+            <p class="item-snippet" style="margin-bottom:6px">${escapeHtml(r.konten)}</p>
+            <div class="item-meta">
+                <span>↪ Balasan di <span class="reply-on">${escapeHtml(r.threadJudul||'thread')}</span></span>
+                <span>🕒 ${formatDate(r.createdAt)}</span>
+            </div>
+        </div>`;
+    }
+
+    async function renderProfile(user){
+        pageContent.innerHTML = `
+            <div class="profile-banner">
+                <div class="avatar-circle">${escapeHtml(user.username.charAt(0).toUpperCase())}</div>
+                <div class="profile-info">
+                    <h1>${escapeHtml(user.username)}</h1>
+                    <p>Anggota Flame</p>
+                    <div class="profile-stats">
+                        <div class="stat-item"><span class="stat-num" id="threadCount">–</span><span class="stat-label">Thread</span></div>
+                        <div class="stat-item"><span class="stat-num" id="replyCount">–</span><span class="stat-label">Balasan</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <div class="section-block">
+                    <div class="section-header">
+                        <h2>💬 Thread yang Dibuat <span class="tab-count" id="threadTabCount">0</span></h2>
+                    </div>
+                    <div id="threadList"><div class="empty-state">Memuat...</div></div>
+                </div>
+                <div class="section-block">
+                    <div class="section-header">
+                        <h2>↪ Balasan yang Dibuat <span class="tab-count" id="replyTabCount">0</span></h2>
+                    </div>
+                    <div id="replyList"><div class="empty-state">Memuat...</div></div>
+                </div>
+            </div>`;
+
+        const username = encodeURIComponent(user.username);
+        const [threads, replies] = await Promise.all([
+            fetchJson(`/api/forum/user/${username}/threads`),
+            fetchJson(`/api/forum/user/${username}/replies`)
+        ]);
+
+        document.getElementById('threadCount').textContent = threads.length;
+        document.getElementById('replyCount').textContent = replies.length;
+        document.getElementById('threadTabCount').textContent = threads.length;
+        document.getElementById('replyTabCount').textContent = replies.length;
+
+        document.getElementById('threadList').innerHTML = threads.length
+            ? threads.map(renderThreadCard).join('')
+            : '<div class="empty-state">Belum ada thread yang dibuat. Mulai diskusi di halaman detail game!</div>';
+
+        document.getElementById('replyList').innerHTML = replies.length
+            ? replies.map(renderReplyCard).join('')
+            : '<div class="empty-state">Belum ada balasan yang dibuat.</div>';
+    }
+
+    const currentUser = getUser();
+    if(!currentUser){
+        renderLoginPrompt();
+    } else {
+        renderProfile(currentUser);
+    }
+    updateAuthUI();
+</script>
+</body>
+</html>
