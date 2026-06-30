@@ -187,12 +187,39 @@
         toast.classList.add('show');
         setTimeout(()=>toast.classList.remove('show'), 2500);
     }
-    document.getElementById('contactForm').addEventListener('submit', (e)=>{
-        e.preventDefault();
-        showToast('Pesan terkirim! (demo — belum terhubung ke backend)');
-        e.target.reset();
-    });
-    updateAuthUI();
+   document.getElementById('contactForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Mengirim...';
+
+    const payload = {
+        nama: document.getElementById('nameInput').value,
+        email: document.getElementById('emailInput').value,
+        pesan: document.getElementById('messageInput').value
+    };
+
+    try {
+        const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Pesan berhasil dikirim!');
+            e.target.reset();
+        } else {
+            showToast(data.message || 'Gagal mengirim pesan.');
+        }
+    } catch (err) {
+        showToast('Gagal terhubung ke server. Coba lagi nanti.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
 </script>
 </body>
 </html>
